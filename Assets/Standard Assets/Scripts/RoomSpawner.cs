@@ -23,6 +23,8 @@ public class RoomSpawner : MonoBehaviour
         int n = arr.GetLength(0);
         PrintCombination(arr, n, r);
 
+        StartCoroutine(waitSpawn());
+
     }
 
     IEnumerator waitSpawn()
@@ -35,9 +37,7 @@ public class RoomSpawner : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        StartCoroutine(waitSpawn());
+    void Update(){
     }
 
     int index = 0;
@@ -46,23 +46,44 @@ public class RoomSpawner : MonoBehaviour
     {
         if(index < combinations.Count - 1)
         {
-            int left = (int)combinations[index];
-            int right = (int)combinations[index+1];
+            GameObject room1 = rooms[(int)combinations[index]];
+            GameObject room2 = rooms[(int)combinations[index+1]];
 
+            GameObject lold = leftRoom;
+            GameObject rold = rightRoom;
+            
+            Vector3 pos = leftRoom.transform.position;
 
-            if (rooms[left - 1].GetComponent<Room>().isRight)
+            if (!(room1.GetComponent<Room>().isRight && room2.GetComponent<Room>().isRight) || !(room1.GetComponent<Room>().isLeft && room2.GetComponent<Room>().isLeft))
             {
-                //flip it
+                Debug.Log("Safe");
+                if (room1.GetComponent<Room>().isRight)
+                {
+                    rightRoom = Instantiate(room1, pos, Quaternion.identity);
+                }
+                else if (room1.GetComponent<Room>().isLeft)
+                {
+                    leftRoom = Instantiate(room1, pos, Quaternion.identity);
+                }
 
+                if (room2.GetComponent<Room>().isLeft)
+                {
+                    leftRoom = Instantiate(room2, pos, Quaternion.identity);
+                }
+                else if (room2.GetComponent<Room>().isRight)
+                {
+                    rightRoom = Instantiate(room2, pos, Quaternion.identity);
+                }
+
+
+                leftRoom.transform.SetParent(lold.transform.parent);
+                rightRoom.transform.SetParent(rold.transform.parent);
+                
+
+                Destroy(lold);
+                Destroy(rold);
             }
 
-            if (rooms[right - 1].GetComponent<Room>().isLeft)
-            {
-                //flip it
-            }
-
-            SwapPrefabs(leftRoom, rooms[left - 1]);
-            SwapPrefabs(rightRoom, rooms[right-1]);
             index = index + 2;
         }
     }
@@ -88,8 +109,7 @@ public class RoomSpawner : MonoBehaviour
             newGameObject.transform.SetParent(oldGameObject.transform.parent);
         }
 
-        // Destroy the old game object, immediately, so it takes effect in the editor.
-        DestroyImmediate(oldGameObject);
+        Destroy(oldGameObject);
     }
 
     void PrintCombination(int[] arr, int n, int r)
@@ -101,7 +121,7 @@ public class RoomSpawner : MonoBehaviour
         {
             Debug.Log(combinations[i] + " " + combinations[i + 1]);
         }
-        */
+        */ 
     }
 
     //Recursive function that computes all possible combinations
